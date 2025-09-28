@@ -1,0 +1,69 @@
+stages:
+  # prepare:
+  #   cmd: source src/cleanup.sh
+  #   deps:
+  #   - src/cleanup.sh
+  #   outs:
+  #   - data/clean.csv
+  download:
+    cmd: python src/download.py --competition devices-error-detection-acmud-2025
+      --output devices-error-detection-acmu/raw/
+    deps:
+    - src/download.py
+    outs:
+    - devices-error-detection-acmu/raw/
+  preprocessing_train:
+    cmd: python src/preprocess_train.py --input 
+      devices-error-detection-acmu/raw/train.csv --output 
+      devices-error-detection-acmu/processed/train_processed.csv
+    deps:
+    - devices-error-detection-acmu/raw/train.csv
+    - src/preprocess_train.py
+    outs:
+    - devices-error-detection-acmu/processed/train_processed.csv
+  preprocessing_test:
+    cmd: python src/preprocess_test.py --input 
+      devices-error-detection-acmu/raw/test.csv --output 
+      devices-error-detection-acmu/processed/test_processed.csv
+    deps:
+    - devices-error-detection-acmu/raw/test.csv
+    - src/preprocess_test.py
+    outs:
+    - devices-error-detection-acmu/processed/test_processed.csv
+  train:
+    cmd: python src/train.py --input 
+      devices-error-detection-acmu/processed/train_processed.csv --model 
+      models/model.pkl
+    deps:
+    - devices-error-detection-acmu/processed/train_processed.csv
+    - src/train.py
+    outs:
+    - models/model.pkl
+  predict:
+    cmd: python src/predict.py --model models/model.pkl --input 
+      devices-error-detection-acmu/processed/test_processed.csv --output 
+      outputs/solutions.csv
+    deps:
+    - devices-error-detection-acmu/processed/test_processed.csv
+    - models/model.pkl
+    - src/predict.py
+    outs:
+    - outputs/solutions.csv
+  exploratory:
+    cmd: python src/exploratory.py --input 
+      devices-error-detection-acmu/raw/train.csv --output reports/dataset
+    deps:
+    - devices-error-detection-acmu/raw/train.csv
+    - src/exploratory.py
+    outs:
+    - reports/dataset
+  metrics:
+    cmd: python src/metrics.py --model models/model.pkl --input 
+      devices-error-detection-acmu/processed/train_processed.csv --output 
+      reports/metrics
+    deps:
+    - devices-error-detection-acmu/processed/train_processed.csv
+    - models/model.pkl
+    - src/metrics.py
+    outs:
+    - reports/metrics
